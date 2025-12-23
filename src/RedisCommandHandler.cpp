@@ -1,4 +1,5 @@
 #include "../include/RedisCommandHandler.h"
+#include "../include/RedisDatabase.h"
 #include <vector>
 #include <sstream>
 #include <algorithm>
@@ -55,9 +56,26 @@ std::string RedisCommandHandler::handleCommand(const std::string& commandLine) {
 
     std::string cmd = tokens[0];
     std::transform(cmd.begin(), cmd.end(), cmd.begin(), ::toupper);
+    std::ostringstream response;
+    RedisDatabase& db = RedisDatabase::getInstance();
     
     // Resposta padrão para teste
     if (cmd == "PING") return "+PONG\r\n";
+    else if (cmd == "DUMP") {
+        if (tokens.size() < 2) return "-Error: DUMP requires a filename\r\n";
+        if (db.dump(tokens[1])) {
+            return "+OK\r\n";
+        } else {
+            return "-Error: Failed to dump database\r\n";
+        }
+    } else if (cmd == "LOAD") {
+        if (tokens.size() < 2) return "-Error: LOAD requires a filename\r\n";
+        if (db.load(tokens[1])) {
+            return "+OK\r\n";
+        } else {
+            return "-Error: Failed to load database\r\n";
+        }
+    }
     
     return "+OK\r\n";
 }

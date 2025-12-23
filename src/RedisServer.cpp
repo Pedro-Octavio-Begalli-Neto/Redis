@@ -1,8 +1,11 @@
 #include "../include/RedisServer.h"
 #include "../include/RedisCommandHandler.h"
+#include "../include/RedisDatabase.h"
 #include <iostream>
 #include <cstring>
 #include <thread>
+#include <signal.h>
+#include <vector>
 
 #ifdef _WIN32
     #define closesocket_func closesocket
@@ -10,7 +13,35 @@
     #define closesocket_func close
 #endif
 
-RedisServer::RedisServer(int port) : port_(port), server_socket(INVALID_SOCKET), running(true) {}
+static RedisServer* global_server = nullptr;
+
+void signalHandler(int signum) {
+    if (global_server) {
+        std::cout << "Shutting down server..." << std::endl;
+        global_server->shutdown();
+    }
+    exit(signum);
+}
+
+void RedisServer::setupSignalHandlers() {
+    #ifdef _WIN32
+        signal(SIGINT, signalHandler);
+        signal(SIGTERM, signalHandler);
+    #else
+        struct sigaction action{};
+        action.sa_handler = signalHandler;
+        sigemptyset(&action.sa_mask);
+        action.sa_flags = 0;
+
+        sigaction(SIGINT, &action, nullptr);
+        sigaction(SIGTERM, &action, nullptr);
+    #endif
+}
+
+RedisServer::RedisServer(int port) : port_(port), server_socket(INVALID_SOCKET), running(true) {
+    global_server = this;
+    setupSignalHandlers();
+}
 
 void RedisServer::shutdown() {
     running = false;
@@ -32,6 +63,16 @@ void RedisServer::run() {
     if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
         std::cerr << "ERRO: Porta ocupada!" << std::endl;
         return;
+    }
+
+    for (auto& t : threads) {
+        if (t.joinable()) t.join();
+    }
+
+    if (RedisDatabase::getInstance().load("dump.rdb")) {
+        std::cout << "[LOG] Banco de dados carregado com sucesso." << std::endl;
+    } else {
+        std::cout << "[ERRO] Falha ao carregar o banco de dados." << std::endl;
     }
 
     listen(server_socket, 10);

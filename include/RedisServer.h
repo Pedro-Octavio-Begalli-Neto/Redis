@@ -37,6 +37,10 @@ private:
     int port_;
     SocketType server_socket; // Uso do tipo correto para evitar o Warning
     std::atomic<bool> running;
+    std::vector<std::thread> threads;
+    void setupSignalHandlers();
+
+
 };
 
 #endif
