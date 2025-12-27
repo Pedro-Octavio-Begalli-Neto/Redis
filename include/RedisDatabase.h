@@ -37,6 +37,7 @@ public:
         return true;
     }
 
+
     void set (const std::string& key, const std::string& value);
     bool get (const std::string& key, std::string& value);
     std::vector<std::string> lget(const std::string& key);
@@ -49,6 +50,7 @@ public:
     bool expire(const std::string& key, int seconds);
     bool rename(const std::string& old_key, const std::string& new_key);
     bool expiretime(const std::string& key, time_t& expire_time);
+    std::string type(const std::string& key);
 };
 
 
