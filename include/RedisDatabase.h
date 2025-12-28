@@ -45,6 +45,7 @@ public:
     std::unordered_map<std::string, std::string> hget(const std::string& key);
     void hset(const std::string& key, const std::unordered_map<std::string, std::string>& value);
 
+
     std::vector<std::string> keys();
     bool del(const std::string& key);
     bool expire(const std::string& key, int seconds);
@@ -59,6 +60,10 @@ public:
     int lrem(const std::string& key, const std::string& value, int count);
     bool lindex(const std::string& key, int index, std::string& value);
     bool lset(const std::string& key, int index, const std::string& value);
+
+    bool dump(const std::string& key, std::string& serialized_value);
+    bool restore(const std::string& key, const std::string& serialized_value, int ttl);
+    bool load(const std::string& filename, bool replace);
 };
 
 
