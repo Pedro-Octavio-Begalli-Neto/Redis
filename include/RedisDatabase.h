@@ -44,6 +44,13 @@ public:
     void lset(const std::string& key, const std::vector<std::string>& value);
     std::unordered_map<std::string, std::string> hget(const std::string& key);
     void hset(const std::string& key, const std::unordered_map<std::string, std::string>& value);
+    bool hdel(const std::string& key, const std::string& field);
+    std::unordered_map<std::string, std::string> hgetall(const std::string& key);
+    std::vector<std::string> hkeys(const std::string& key);
+    std::vector<std::string> hvals(const std::string& key);
+    ssize_t hlen(const std::string& key);
+    bool hmset(const std::string& key, const std::unordered_map<std::string, std::string>& field_values);
+    bool hmget(const std::string& key, const std::vector<std::string>& fields, std::unordered_map<std::string, std::string>& result);
 
 
     std::vector<std::string> keys();
@@ -64,6 +71,10 @@ public:
     bool dump(const std::string& key, std::string& serialized_value);
     bool restore(const std::string& key, const std::string& serialized_value, int ttl);
     bool load(const std::string& filename, bool replace);
+
+    bool handleHsetCommand(RedisDatabase& db, const std::vector<std::string>& tokens);
+    void handleHsetCommand(void); // Forward declaration
+    bool handleHgetCommand(RedisDatabase& db, const std::vector<std::string>& tokens);
 };
 
 
